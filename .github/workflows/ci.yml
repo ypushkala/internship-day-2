@@ -1,0 +1,40 @@
+name: CI Pipeline
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        language: [python, node]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      if: matrix.language == 'python'
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+        
+    - name: Set up Node
+      if: matrix.language == 'node'
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+        
+    - name: Install dependencies
+      run: |
+        if [ "${{ matrix.language }}" = "python" ]; then
+          pip install -r requirements.txt
+        elif [ "${{ matrix.language }}" = "node" ]; then
+          npm ci
+        fi
+        
+    - name: Run tests
+      run: |
+        if [ "${{ matrix.language }}" = "python" ]; then
+          pytest
+        elif [ "${{ matrix.language }}" = "node" ]; then
+          npm test
+        fi
